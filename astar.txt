@@ -1,0 +1,86 @@
+import heapq
+import numpy as np
+class PuzzleState:
+    def __init__(self, state, parent=None, move=None, cost=0):
+        self.state = state
+        self.parent = parent
+        self.move = move
+        self.cost = cost
+        self.heuristic = self.calculate_heuristic()
+    def __lt__(self, other):
+        return (self.cost + self.heuristic) < (other.cost + other.heuristic)
+    def __eq__(self, other):
+        return np.array_equal(self.state, other.state)
+    def __hash__(self):
+        return hash(tuple(self.state.flatten()))
+    def calculate_heuristic(self):
+        goal_state = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+        positions = {element: np.argwhere(self.state == element)[
+            0] for element in range(9)}
+        heuristic = 0
+
+        for i in range(3):
+            for j in range(3):
+                if self.state[i, j] != 0:
+                    goal_position = np.argwhere(
+                        goal_state == self.state[i, j])[0]
+                    heuristic += abs(i -
+                                     goal_position[0]) + abs(j - goal_position[1])
+
+        return heuristic
+    def get_next_states(self):
+        blank_position = np.argwhere(self.state == 0)[0]
+        possible_moves = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+        next_states = []
+
+        for move in possible_moves:
+            new_position = blank_position + move
+            if 0 <= new_position[0] < 3 and 0 <= new_position[1] < 3:
+                new_state = np.copy(self.state)
+                new_state[blank_position[0], blank_position[1]
+                          ] = new_state[new_position[0], new_position[1]]
+                new_state[new_position[0], new_position[1]] = 0
+                next_states.append(PuzzleState(
+                    new_state, self, move, self.cost + 1))
+
+        return next_states
+def a_star(initial_state):
+    initial_node = PuzzleState(initial_state)
+    open_set = [initial_node]
+    closed_set = set()
+    state_costs = {initial_node: initial_node.cost}
+
+    while open_set:
+        current_node = heapq.heappop(open_set)
+        if np.array_equal(current_node.state, np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])):
+            path = []
+            while current_node.parent:
+                path.append((current_node.move, current_node.state))
+                current_node = current_node.parent
+            path.reverse()
+            return path
+        closed_set.add(current_node)
+        next_states = current_node.get_next_states()
+        for next_state in next_states:
+            if next_state not in closed_set and (next_state not in open_set or state_costs[next_state] > next_state.cost):
+                state_costs[next_state] = next_state.cost
+                heapq.heappush(open_set, next_state)
+    return None
+
+def print_solution(path):
+    for move, state in path:
+        print(f"Move: {move}\n{np.array(state)}\n")
+
+if __name__ == "__main__":
+    # Get initial state from user input
+    initial_state = np.zeros((3, 3), dtype=int)
+    print("Enter the initial state (use 0 to represent the blank space):")
+    for i in range(3):
+        initial_state[i] = list(map(int, input().split()))
+
+    solution_path = a_star(initial_state)
+
+    if solution_path:
+        print_solution(solution_path)
+    else:
+        print("No solution found.")
