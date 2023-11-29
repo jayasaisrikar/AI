@@ -1,0 +1,49 @@
+print("Goat - G , Tiger - T, Man - M , Bundle - B")
+solved = False
+L = ["G", "M", "T", "B"]
+R = []
+index = 0
+
+
+def PRINT():
+    print(L, "        ", R)
+
+
+while (not solved):
+    inp = input("Enter the item man want to take to cross the river : ")
+    if index % 2 == 0:
+        if inp not in L:
+            print(f"Wrong input {inp} not in the bank")
+        else:
+            index = index+1
+            R.append(L.pop(L.index("M")))
+            if inp != "M":
+                R.append(L.pop(L.index(inp)))
+            PRINT()
+            if "G" in L and "B" in L and "M" not in L:
+                print("you lost the game Goat will eat the bundle of grass")
+                break
+            elif "T" in L and "G" in L and "M" not in L:
+                print("you lost the game Tiger will eat the Goat")
+                break
+            elif len(L) == 0 and len(R) == 4:
+                print(f"You won the game in {index} attempts")
+                solved = True
+    else:
+        if inp not in R:
+            print(f"Wrong input {inp} not in the bank")
+        else:
+            index = index+1
+            L.append(R.pop(R.index("M")))
+            if inp != "M":
+                L.append(R.pop(R.index(inp)))
+            PRINT()
+            if "G" in R and "B" in R and "M" not in R:
+                print("you lost the game Goat will eat the bundle of grass")
+                break
+            elif "T" in R and "G" in R and "M" not in R:
+                print("you lost the game Tiger will eat the Goat")
+                break
+            elif len(L) == 0 and len(R) == 4:
+                print(f"You won the game in {index} attempts")
+                solved = True
